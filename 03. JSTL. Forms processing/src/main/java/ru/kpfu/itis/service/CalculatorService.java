@@ -1,27 +1,59 @@
 package ru.kpfu.itis.service;
 
-import org.springframework.stereotype.Component;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import ru.kpfu.itis.model.Calculator;
+import ru.kpfu.itis.model.Operation;
+import ru.kpfu.itis.repository.OperationRepository;
 
-@Component
+import java.util.Calendar;
+import java.util.Date;
+import java.util.List;
+
+@Service
 public class CalculatorService {
 
-    public double getResult(Calculator calculator) {
+    @Autowired
+    private OperationRepository operationRepository;
+
+    public void calculateResult(Calculator calculator) {
         double firstNumber = Double.parseDouble(calculator.getFirstNumber());
         double secondNumber = Double.parseDouble(calculator.getSecondNumber());
+        double result = 0;
         switch (calculator.getOperation()) {
             case "+":
-                return firstNumber + secondNumber;
+                result = firstNumber + secondNumber;
+                break;
             case "-":
-                return firstNumber - secondNumber;
+                result = firstNumber - secondNumber;
+                break;
             case "*":
-                return firstNumber * secondNumber;
+                result = firstNumber * secondNumber;
+                break;
             case "/":
-                return firstNumber / secondNumber;
+                result = firstNumber / secondNumber;
+                break;
             case "%":
-                return firstNumber % secondNumber;
+                result = firstNumber % secondNumber;
+                break;
         }
-        throw new IllegalArgumentException("Такого не произойдет");
+        calculator.setResult(result + "");
+    }
+
+    @Transactional
+    public void saveWithHistory(Calculator calculator) {
+        Operation operation = new Operation();
+        operation.setCalculator(calculator);
+        operation.setDate(new Date());
+        operationRepository.save(operation);
+    }
+
+    public List<Operation> findAllLaterThanAnHourAgo() {
+        Calendar cal = Calendar.getInstance();
+        cal.add(Calendar.HOUR, -1);
+        Date before = cal.getTime();
+        return operationRepository.findAllByDateBefore(before);
     }
 
 }

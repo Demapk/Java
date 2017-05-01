@@ -20,15 +20,17 @@ public class CalculatorController {
     @GetMapping(value = "/calculator")
     public String getIndexPage(Model model) {
         model.addAttribute("calculator", new Calculator());
-        return "index";
+        return "calculator/index";
     }
 
     @PostMapping(value = "/calculator")
     public String getResult(@Valid @ModelAttribute("calculator") Calculator calculator, BindingResult result, Model model) {
         if (!result.hasErrors()) {
-          model.addAttribute("result", calculatorService.getResult(calculator));
+            calculatorService.calculateResult(calculator);
+            model.addAttribute("result", calculator.getResult());
+            calculatorService.saveWithHistory(calculator);
         }
-        return "index";
+        return "calculator/index";
     }
 
 }
